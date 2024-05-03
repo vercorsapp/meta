@@ -1,0 +1,46 @@
+[versions]
+kotlin = "1.9.23"           # https://kotlinlang.org/docs/home.html
+ktor = "2.3.10"             # https://ktor.io/docs/welcome.html
+ktorfit = "1.13.0"          # https://github.com/Foso/Ktorfit/releases
+cache = "0.2.8"             # https://github.com/Scogun/ktor-simple-cache/releases
+logback = "1.4.14"          # https://github.com/qos-ch/logback/tags
+dagger = "2.51.1"           # https://github.com/google/dagger/releases
+anvil = "2.4.9"             # https://github.com/square/anvil/releases
+ksp = "1.9.23-1.0.20"       # https://github.com/google/ksp/releases
+kotlin-logging = "6.0.9"    # https://github.com/oshai/kotlin-logging/releases
+protobuf-lib = "4.26.1"     # https://mvnrepository.com/artifact/com.google.protobuf/protobuf-kotlin
+protobuf-plugin = "0.9.4"   # https://plugins.gradle.org/plugin/com.google.protobuf
+
+[libraries]
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
+ktor-server-tests = { module = "io.ktor:ktor-server-tests", version.ref = "ktor" }
+ktor-simple-cache = { module = "com.ucasoft.ktor:ktor-simple-cache", version.ref = "cache" }
+ktor-simple-memory-cache = { module = "com.ucasoft.ktor:ktor-simple-memory-cache", version.ref = "cache" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-serialization-kotlinx-xml = { module = "io.ktor:ktor-serialization-kotlinx-xml", version.ref = "ktor" }
+ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }
+ktorfit-lib-light = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
+dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+kotlin-logging = { group = "io.github.oshai", name = "kotlin-logging", version.ref = "kotlin-logging" }
+protobuf-kotlin = { group = "com.google.protobuf", name = "protobuf-kotlin", version.ref = "protobuf-lib" }
+protoc = { group = "com.google.protobuf", name = "protoc", version.ref = "protobuf-lib" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
+anvil = { id = "com.squareup.anvil", version.ref = "anvil" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }
