@@ -21,11 +21,20 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
+syntax = "proto3";
+package app.vercors.api.loader;
+
+option java_multiple_files = true;
+
+enum LoaderType {
+  fabric = 0;
+  forge = 1;
+  neoforge = 2;
+  quilt = 3;
 }
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+message VersionList {
+  optional string recommended = 1;
+  optional string latest = 2;
+  repeated string versions = 3;
+}

@@ -21,11 +21,25 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
+package app.vercors.api.loader.forge
+
+import de.jensklingenberg.ktorfit.Ktorfit
+import de.jensklingenberg.ktorfit.http.GET
+import de.jensklingenberg.ktorfit.http.Headers
+import io.ktor.client.HttpClient
+import org.koin.core.annotation.Single
+
+interface ForgeApi {
+    @GET("https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json")
+    suspend fun getPromotions(): ForgePromotions
+
+    @Headers("Accept: text/xml")
+    @GET("https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml")
+    suspend fun getMavenMetadata(): ForgeMavenMetadata
 }
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+@Single
+internal fun provideForgeApi(httpClient: HttpClient): ForgeApi = Ktorfit.Builder()
+    .httpClient(httpClient)
+    .build()
+    .createForgeApi()

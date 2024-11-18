@@ -21,11 +21,22 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
-}
+package app.vercors.api.plugins
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import org.koin.ktor.ext.getProperty
+import org.koin.ktor.ext.inject
+
+fun Application.configureSecurity() {
+    val token = getProperty<String>("vercorsApiToken")
+    require(!token.isNullOrBlank()) { "vercorsApiToken property must be set" }
+
+    install(Authentication) {
+        bearer("api-auth") {
+            authenticate {
+                if (it.token == token) UserIdPrincipal("api") else null
+            }
+        }
+    }
+}

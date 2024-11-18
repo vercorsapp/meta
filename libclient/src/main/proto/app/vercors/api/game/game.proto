@@ -21,11 +21,28 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
+syntax = "proto3";
+package app.vercors.api.game;
+
+option java_multiple_files = true;
+
+message GameVersionList {
+  string recommended = 1;
+  string latest = 2;
+  repeated GameVersion versions = 3;
 }
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+message GameVersion {
+  string id = 1;
+  GameVersionType type = 2;
+  uint64 time = 3;
+  string url = 4;
+  string sha1 = 5;
+}
+
+enum GameVersionType {
+  release = 0;
+  snapshot = 1;
+  beta = 2;
+  alpha = 3;
+}

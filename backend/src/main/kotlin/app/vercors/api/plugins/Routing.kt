@@ -21,11 +21,25 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
-}
+package app.vercors.api.plugins
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+import app.vercors.api.auth.authRoutes
+import app.vercors.api.game.gameRoutes
+import app.vercors.api.home.homeRoutes
+import app.vercors.api.loader.loaderRoutes
+import io.ktor.server.application.*
+import io.ktor.server.auth.authenticate
+import io.ktor.server.routing.*
+
+fun Application.configureRouting() {
+    routing {
+        authenticate("api-auth") {
+            route("/v1") {
+                gameRoutes()
+                homeRoutes()
+                loaderRoutes()
+                authRoutes()
+            }
+        }
+    }
+}

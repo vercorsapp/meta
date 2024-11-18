@@ -21,11 +21,34 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
+package app.vercors.api
+
+import app.vercors.api.plugins.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import kotlinx.coroutines.*
+
+private val logger = KotlinLogging.logger {}
+
+fun main() {
+    logger.info { "Hello world!" }
+    val externalScope = CoroutineScope(Dispatchers.Default) + SupervisorJob()
+    val app = embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = { configure(externalScope) })
+    app.addShutdownHook {
+        externalScope.cancel()
+        logger.info { "Goodbye!" }
+    }
+    logger.info { "Starting application" }
+    app.start(wait = true)
 }
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+fun Application.configure(externalScope: CoroutineScope) {
+    configureDI(externalScope)
+    configureSecurity()
+    configureSerialization()
+    configureMonitoring()
+    configureCache()
+    configureRouting()
+}

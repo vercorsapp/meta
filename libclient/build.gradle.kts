@@ -21,11 +21,38 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import com.google.protobuf.gradle.id
+
 plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.protobuf)
 }
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api(libs.protobuf.kotlin.lite)
+}
+
+protobuf {
+    protoc {
+        artifact = libs.protoc.get().toString()
+    }
+
+    generateProtoTasks {
+        all().forEach {
+            it.builtins {
+                named("java") {
+                    option("lite")
+                }
+                id("kotlin") {
+                    option("lite")
+                }
+            }
+        }
+    }
+}

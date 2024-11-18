@@ -21,11 +21,30 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
-}
+package app.vercors.api.loader
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+import app.vercors.api.pathParam
+import app.vercors.api.respondProtobuf
+import app.vercors.api.safeValueOf
+import io.ktor.http.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
+
+fun Route.loaderRoutes() {
+    val loaderService by inject<LoaderService>()
+
+    route("/loader") {
+        get("/{loader}/{gameVersion}") {
+            val loaderType = safeValueOf<LoaderType>(pathParam("loader"))
+            val gameVersion = pathParam("gameVersion")
+            call.respondProtobuf(loaderService.getLoaderVersionsForGameVersion(loaderType, gameVersion))
+        }
+        get("/{loader}/{gameVersion}/{loaderVersion}") {
+            call.respond(HttpStatusCode.NotImplemented)
+            /*val loaderType = LoaderType.valueOf(loader)
+            val data = loaderService.getLoaderVersion(loaderType, gameVersion, loaderVersion)
+            return data?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()*/
+        }
+    }
+}

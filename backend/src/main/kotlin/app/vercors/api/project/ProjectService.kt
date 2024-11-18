@@ -21,11 +21,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
-}
+package app.vercors.api.project
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+fun interface ProjectService {
+    suspend fun searchProject(
+        provider: ProjectProvider,
+        type: ProjectType,
+        limit: Int
+    ): List<Project>
+}

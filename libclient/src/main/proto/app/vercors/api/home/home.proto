@@ -21,11 +21,17 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
+syntax = "proto3";
+import "app/vercors/api/project/project.proto";
+package app.vercors.api.home;
+
+option java_multiple_files = true;
+
+message HomeResponse {
+  repeated HomeSection sections = 1;
 }
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+message HomeSection {
+  app.vercors.api.project.ProjectType type = 1;
+  repeated app.vercors.api.project.Project projects = 2;
+}

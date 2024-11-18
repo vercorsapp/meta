@@ -21,11 +21,23 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
+package app.vercors.api.loader.fabric
+
+import app.vercors.api.loader.fabriclike.FabricLikeVersions
+import de.jensklingenberg.ktorfit.Ktorfit
+import de.jensklingenberg.ktorfit.http.GET
+import io.ktor.client.HttpClient
+import org.koin.core.annotation.Single
+
+@Suppress("kotlin:S6517")
+interface FabricApi {
+    @GET("v2/versions")
+    suspend fun getAllVersions(): FabricLikeVersions
 }
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+@Single
+internal fun provideFabricApi(httpClient: HttpClient): FabricApi = Ktorfit.Builder()
+    .baseUrl("https://meta.fabricmc.net/")
+    .httpClient(httpClient)
+    .build()
+    .createFabricApi()

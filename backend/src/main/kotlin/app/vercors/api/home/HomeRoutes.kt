@@ -21,11 +21,23 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
-}
+package app.vercors.api.home
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+import app.vercors.api.pathParam
+import app.vercors.api.project.ProjectProvider
+import app.vercors.api.project.ProjectType
+import app.vercors.api.queryParam
+import app.vercors.api.respondProtobuf
+import app.vercors.api.safeValueOf
+import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
+
+fun Route.homeRoutes() {
+    val homeService by inject<HomeService>()
+
+    get("/home/{provider}") {
+        val provider = safeValueOf<ProjectProvider>(pathParam("provider"))
+        val types = queryParam("types").split(',').map { safeValueOf<ProjectType>(it) }
+        call.respondProtobuf(homeService.getHomeProjects(provider, types))
+    }
+}

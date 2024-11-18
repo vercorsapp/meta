@@ -21,11 +21,23 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
+package app.vercors.api.loader.quilt
+
+import app.vercors.api.loader.fabriclike.FabricLikeVersions
+import de.jensklingenberg.ktorfit.Ktorfit
+import de.jensklingenberg.ktorfit.http.GET
+import io.ktor.client.HttpClient
+import org.koin.core.annotation.Single
+
+@Suppress("kotlin:S6517")
+interface QuiltApi {
+    @GET("v3/versions")
+    suspend fun getAllVersions(): FabricLikeVersions
 }
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+@Single
+internal fun provideQuiltApi(httpClient: HttpClient): QuiltApi = Ktorfit.Builder()
+    .baseUrl("https://meta.quiltmc.org/")
+    .httpClient(httpClient)
+    .build()
+    .createQuiltApi()

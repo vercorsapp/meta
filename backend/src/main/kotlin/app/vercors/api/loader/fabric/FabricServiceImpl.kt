@@ -21,11 +21,25 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
-}
+package app.vercors.api.loader.fabric
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+import app.vercors.api.loader.fabriclike.FabricLikeApi
+import app.vercors.api.loader.fabriclike.FabricLikeService
+import kotlinx.coroutines.CoroutineScope
+import org.koin.core.annotation.Single
+
+@Single
+class FabricServiceImpl(
+    fabricApi: FabricApi,
+    externalScope: CoroutineScope
+) : FabricLikeService("Fabric", FabricLikeApi { fabricApi.getAllVersions() }, externalScope), FabricService {
+    override val installerArgs: List<String> = listOf(
+        "client",
+        "-dir",
+        "\${installDir}",
+        "-mcversion",
+        "\${gameVersion}",
+        "-loader",
+        "\${loaderVersion}"
+    )
+}

@@ -21,11 +21,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
-}
+package app.vercors.api.loader
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+import app.vercors.api.project.ProjectInstaller
+
+interface LoaderServiceBase {
+    suspend fun getLoaderVersionsForGameVersion(gameVersion: String): VersionList?
+    suspend fun getInstaller(): ProjectInstaller?
+    fun load()
+}

@@ -21,11 +21,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
-}
+package app.vercors.api.plugins
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+import com.ucasoft.ktor.simpleCache.SimpleCache
+import com.ucasoft.ktor.simpleMemoryCache.memoryCache
+import io.ktor.server.application.*
+import kotlin.time.Duration.Companion.minutes
+
+fun Application.configureCache() {
+    install(SimpleCache) {
+        memoryCache {}
+    }
+}

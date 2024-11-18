@@ -21,11 +21,37 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
+syntax = "proto3";
+package app.vercors.api.project;
+
+option java_multiple_files = true;
+
+enum ProjectProvider {
+  modrinth = 0;
+  curseforge = 1;
 }
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+enum ProjectType {
+  mod = 0;
+  modpack = 1;
+  resourcepack = 2;
+  shader = 3;
+}
+
+message Project {
+  ProjectProvider provider = 1;
+  ProjectType type = 2;
+  string name = 3;
+  string author = 4;
+  optional string logoUrl = 5;
+  optional string imageUrl = 6;
+  string description = 7;
+}
+
+message ProjectInstaller {
+  string url = 1;
+  string maven = 2;
+  string version = 3;
+  int32 minimumJavaVersion = 4;
+  repeated string arguments = 5;
+}

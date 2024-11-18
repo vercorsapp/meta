@@ -21,4 +21,6 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-rootProject.name = "api-new"
+rootProject.name = "api"
+
+include("backend", "libclient")

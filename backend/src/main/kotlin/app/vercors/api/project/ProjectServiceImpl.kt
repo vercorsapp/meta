@@ -21,11 +21,26 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
-}
+package app.vercors.api.project
 
-group = "app.vercors"
-version = "0.1.0-SNAPSHOT"
+import app.vercors.api.project.curseforge.CurseforgeService
+import app.vercors.api.project.modrinth.ModrinthService
+import org.koin.core.annotation.Single
+
+@Single
+class ProjectServiceImpl(
+    private val modrinthService: ModrinthService,
+    private val curseforgeService: CurseforgeService
+) : ProjectService {
+    override suspend fun searchProject(
+        provider: ProjectProvider,
+        type: ProjectType,
+        limit: Int
+    ): List<Project> = getProviderService(provider).search(type, limit)
+
+    private fun getProviderService(provider: ProjectProvider): ProviderService = when (provider) {
+        ProjectProvider.modrinth -> modrinthService
+        ProjectProvider.curseforge -> curseforgeService
+        ProjectProvider.UNRECOGNIZED -> throw IllegalArgumentException("Unrecognized project provider")
+    }
+}
