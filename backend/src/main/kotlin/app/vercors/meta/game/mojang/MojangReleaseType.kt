@@ -20,53 +20,22 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.game.mojang
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+@Serializable
+enum class MojangReleaseType(val value: String) {
+    @SerialName("release")
+    Release("release"),
 
-repositories {
-    mavenCentral()
-}
+    @SerialName("snapshot")
+    Snapshot("snapshot"),
 
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
+    @SerialName("old_beta")
+    Beta("old_beta"),
 
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
-    }
+    @SerialName("old_alpha")
+    Alpha("old_alpha"),
 }

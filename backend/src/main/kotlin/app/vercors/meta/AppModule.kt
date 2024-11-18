@@ -20,53 +20,40 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import app.vercors.meta.utils.InstantSerializer
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.serialization.kotlinx.xml.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
+import org.koin.core.annotation.Single
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+@Module(createdAtStart = true)
+@ComponentScan
+class AppModule
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
+@Single
+internal fun provideHttpClient(): HttpClient = HttpClient(CIO) {
+    install(ContentNegotiation) {
+        json(Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+            serializersModule = SerializersModule {
+                contextual(InstantSerializer())
             }
-        }
+        })
+        xml(contentType = ContentType.Text.Xml)
     }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
+    install(UserAgent) {
+        agent = "vercors/api/0.1.0-SNAPSHOT (contact@skye.codes)"
     }
 }

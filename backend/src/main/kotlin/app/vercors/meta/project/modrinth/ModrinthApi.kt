@@ -20,53 +20,38 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.project.modrinth
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
+import de.jensklingenberg.ktorfit.Ktorfit
+import de.jensklingenberg.ktorfit.http.GET
+import de.jensklingenberg.ktorfit.http.Query
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.header
+import org.koin.core.annotation.Property
+import org.koin.core.annotation.Single
+
+@Suppress("kotlin:S6517")
+interface ModrinthApi {
+    @GET("v2/search")
+    suspend fun search(
+        @Query("facets") facets: String? = null,
+        @Query("query") query: String? = null,
+        @Query("index") index: ModrinthProjectSearchIndex? = null,
+        @Query("offset") offset: Int? = null,
+        @Query("limit") limit: Int? = null,
+    ): ModrinthProjectSearchResult
 }
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
+@Single
+internal fun provideModrinthApi(@Property("modrinthApiKey") modrinthApiKey: String, httpClient: HttpClient): ModrinthApi =
+    Ktorfit.Builder()
+        .baseUrl("https://api.modrinth.com/")
+        .httpClient(httpClient.config {
+            defaultRequest {
+                header("Authorization", modrinthApiKey)
             }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
-    }
-}
+        })
+        .build()
+        .createModrinthApi()

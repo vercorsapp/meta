@@ -20,53 +20,24 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.loader.quilt
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import app.vercors.meta.loader.fabriclike.FabricLikeApi
+import app.vercors.meta.loader.fabriclike.FabricLikeService
+import kotlinx.coroutines.CoroutineScope
+import org.koin.core.annotation.Single
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
-    }
+@Single
+class QuiltServiceImpl(
+    quiltApi: QuiltApi,
+    externalScope: CoroutineScope
+) : FabricLikeService("Quilt", FabricLikeApi { quiltApi.getAllVersions() }, externalScope), QuiltService {
+    override val installerArgs: List<String> = listOf(
+        "install",
+        "client",
+        "\${gameVersion}",
+        "\${loaderVersion}",
+        "--install-dir=\${installDir}",
+        "--no-profile"
+    )
 }

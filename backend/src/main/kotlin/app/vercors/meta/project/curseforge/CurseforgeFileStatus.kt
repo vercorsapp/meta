@@ -20,53 +20,30 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.project.curseforge
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
+import app.vercors.meta.utils.IntEnumerable
+import app.vercors.meta.utils.IntEnumerableSerializer
+import kotlinx.serialization.Serializable
+
+@Serializable(CurseforgeFileStatusSerializer::class)
+enum class CurseforgeFileStatus(override val value: Int) : IntEnumerable {
+    Processing(1),
+    ChangesRequired(2),
+    UnderReview(3),
+    Approved(4),
+    Rejected(5),
+    MalwareDetected(6),
+    Deleted(7),
+    Archived(8),
+    Testing(9),
+    Released(10),
+    ReadyForReview(11),
+    Deprecated(12),
+    Baking(13),
+    AwaitingPublishing(14),
+    FailedPublishing(15)
 }
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
-    }
-}
+private class CurseforgeFileStatusSerializer :
+    IntEnumerableSerializer<CurseforgeFileStatus>(CurseforgeFileStatus.entries)

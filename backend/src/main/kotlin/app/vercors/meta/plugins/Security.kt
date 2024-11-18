@@ -20,53 +20,21 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.plugins
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import org.koin.ktor.ext.getProperty
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+fun Application.configureSecurity() {
+    val token = getProperty<String>("vercorsApiToken")
+    require(!token.isNullOrBlank()) { "vercorsApiToken property must be set" }
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
+    install(Authentication) {
+        bearer("api-auth") {
+            authenticate {
+                if (it.token == token) UserIdPrincipal("api") else null
             }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
         }
     }
 }

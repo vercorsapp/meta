@@ -20,53 +20,30 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.loader
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import app.vercors.meta.pathParam
+import app.vercors.meta.respondProtobuf
+import app.vercors.meta.safeValueOf
+import io.ktor.http.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+fun Route.loaderRoutes() {
+    val loaderService by inject<LoaderService>()
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
+    route("/loader") {
+        get("/{loader}/{gameVersion}") {
+            val loaderType = safeValueOf<LoaderType>(pathParam("loader"))
+            val gameVersion = pathParam("gameVersion")
+            call.respondProtobuf(loaderService.getLoaderVersionsForGameVersion(loaderType, gameVersion))
         }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
+        get("/{loader}/{gameVersion}/{loaderVersion}") {
+            call.respond(HttpStatusCode.NotImplemented)
+            /*val loaderType = LoaderType.valueOf(loader)
+            val data = loaderService.getLoaderVersion(loaderType, gameVersion, loaderVersion)
+            return data?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()*/
         }
     }
 }

@@ -20,53 +20,28 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.utils
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.serialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
+interface IntEnumerable {
+    val value: Int
 }
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+abstract class IntEnumerableSerializer<T : IntEnumerable>(private val values: List<T>) : KSerializer<T> {
+    override val descriptor = serialDescriptor<Int>()
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
+    override fun deserialize(decoder: Decoder): T {
+        val value = decoder.decodeInt()
+        return values.firstOrNull { it.value == value }
+            ?: throw SerializationException("Unable to decode value $value. Valid values are $values")
     }
 
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
+    override fun serialize(encoder: Encoder, value: T) {
+        encoder.encodeInt(value.value)
     }
 }

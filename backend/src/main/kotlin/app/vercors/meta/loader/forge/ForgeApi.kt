@@ -20,53 +20,25 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.loader.forge
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
+import de.jensklingenberg.ktorfit.Ktorfit
+import de.jensklingenberg.ktorfit.http.GET
+import de.jensklingenberg.ktorfit.http.Headers
+import io.ktor.client.HttpClient
+import org.koin.core.annotation.Single
+
+interface ForgeApi {
+    @GET("https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json")
+    suspend fun getPromotions(): ForgePromotions
+
+    @Headers("Accept: text/xml")
+    @GET("https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml")
+    suspend fun getMavenMetadata(): ForgeMavenMetadata
 }
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
-    }
-}
+@Single
+internal fun provideForgeApi(httpClient: HttpClient): ForgeApi = Ktorfit.Builder()
+    .httpClient(httpClient)
+    .build()
+    .createForgeApi()

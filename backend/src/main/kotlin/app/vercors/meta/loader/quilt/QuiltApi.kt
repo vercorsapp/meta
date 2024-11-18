@@ -20,53 +20,23 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.loader.quilt
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
+import app.vercors.meta.loader.fabriclike.FabricLikeVersions
+import de.jensklingenberg.ktorfit.Ktorfit
+import de.jensklingenberg.ktorfit.http.GET
+import io.ktor.client.HttpClient
+import org.koin.core.annotation.Single
+
+@Suppress("kotlin:S6517")
+interface QuiltApi {
+    @GET("v3/versions")
+    suspend fun getAllVersions(): FabricLikeVersions
 }
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
-    }
-}
+@Single
+internal fun provideQuiltApi(httpClient: HttpClient): QuiltApi = Ktorfit.Builder()
+    .baseUrl("https://meta.quiltmc.org/")
+    .httpClient(httpClient)
+    .build()
+    .createQuiltApi()

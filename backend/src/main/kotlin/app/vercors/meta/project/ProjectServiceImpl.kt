@@ -20,53 +20,26 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.project
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import app.vercors.meta.project.curseforge.CurseforgeService
+import app.vercors.meta.project.modrinth.ModrinthService
+import org.koin.core.annotation.Single
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+@Single
+class ProjectServiceImpl(
+    private val modrinthService: ModrinthService,
+    private val curseforgeService: CurseforgeService
+) : ProjectService {
+    override suspend fun searchProject(
+        provider: ProjectProvider,
+        type: ProjectType,
+        limit: Int
+    ): List<Project> = getProviderService(provider).search(type, limit)
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
+    private fun getProviderService(provider: ProjectProvider): ProviderService = when (provider) {
+        ProjectProvider.modrinth -> modrinthService
+        ProjectProvider.curseforge -> curseforgeService
+        ProjectProvider.UNRECOGNIZED -> throw IllegalArgumentException("Unrecognized project provider")
     }
 }

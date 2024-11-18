@@ -20,53 +20,25 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.plugins
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import app.vercors.meta.auth.authRoutes
+import app.vercors.meta.game.gameRoutes
+import app.vercors.meta.home.homeRoutes
+import app.vercors.meta.loader.loaderRoutes
+import io.ktor.server.application.*
+import io.ktor.server.auth.authenticate
+import io.ktor.server.routing.*
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
+fun Application.configureRouting() {
+    routing {
+        authenticate("api-auth") {
+            route("/v1") {
+                gameRoutes()
+                homeRoutes()
+                loaderRoutes()
+                authRoutes()
             }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
         }
     }
 }

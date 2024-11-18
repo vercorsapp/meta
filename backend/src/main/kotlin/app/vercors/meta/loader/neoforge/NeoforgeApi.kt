@@ -20,53 +20,22 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.loader.neoforge
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
+import de.jensklingenberg.ktorfit.Ktorfit
+import de.jensklingenberg.ktorfit.http.GET
+import io.ktor.client.HttpClient
+import org.koin.core.annotation.Single
+
+@Suppress("kotlin:S6517")
+interface NeoforgeApi {
+    @GET("api/maven/versions/releases/net/neoforged/neoforge")
+    suspend fun getAllVersions(): NeoforgeVersionList
 }
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
-    }
-}
+@Single
+internal fun provideNeoforgeApi(httpClient: HttpClient): NeoforgeApi = Ktorfit.Builder()
+    .baseUrl("https://maven.neoforged.net/")
+    .httpClient(httpClient)
+    .build()
+    .createNeoforgeApi()

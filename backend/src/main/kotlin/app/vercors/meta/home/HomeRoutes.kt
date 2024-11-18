@@ -20,53 +20,23 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.home
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import app.vercors.meta.pathParam
+import app.vercors.meta.project.ProjectProvider
+import app.vercors.meta.project.ProjectType
+import app.vercors.meta.queryParam
+import app.vercors.meta.respondProtobuf
+import app.vercors.meta.safeValueOf
+import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+fun Route.homeRoutes() {
+    val homeService by inject<HomeService>()
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
+    get("/home/{provider}") {
+        val provider = safeValueOf<ProjectProvider>(pathParam("provider"))
+        val types = queryParam("types").split(',').map { safeValueOf<ProjectType>(it) }
+        call.respondProtobuf(homeService.getHomeProjects(provider, types))
     }
 }

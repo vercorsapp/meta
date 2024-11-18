@@ -20,53 +20,34 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import app.vercors.meta.plugins.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import kotlinx.coroutines.*
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+private val logger = KotlinLogging.logger {}
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
-
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
+fun main() {
+    logger.info { "Hello world!" }
+    val externalScope = CoroutineScope(Dispatchers.Default) + SupervisorJob()
+    val app = embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = { configure(externalScope) })
+    app.addShutdownHook {
+        externalScope.cancel()
+        logger.info { "Goodbye!" }
     }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
+    logger.info { "Starting application" }
+    app.start(wait = true)
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
-    }
+fun Application.configure(externalScope: CoroutineScope) {
+    configureDI(externalScope)
+    configureSecurity()
+    configureSerialization()
+    configureMonitoring()
+    configureCache()
+    configureRouting()
 }

@@ -20,53 +20,32 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.loader.fabriclike
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import kotlinx.serialization.Serializable
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+@Serializable
+data class FabricLikeVersions(
+    val game: List<FabricLikeGameVersion>,
+    val loader: List<FabricLikeLoaderVersion>,
+    val installer: List<FabricLikeInstallerVersion>
+)
 
-repositories {
-    mavenCentral()
-}
+@Serializable
+data class FabricLikeGameVersion(
+    val version: String
+)
 
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
+@Serializable
+data class FabricLikeLoaderVersion(
+    val version: String,
+    val stable: Boolean?
+)
 
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
-    }
-}
+@Serializable
+data class FabricLikeInstallerVersion(
+    val url: String,
+    val maven: String,
+    val version: String,
+    val stable: Boolean?
+)

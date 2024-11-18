@@ -20,53 +20,22 @@
  * SOFTWARE.
  */
 
-import com.google.protobuf.gradle.id
+package app.vercors.meta.project.modrinth
 
-plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.protobuf)
-    `maven-publish`
-}
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
+@Serializable
+enum class ModrinthProjectType(val value: String) {
+    @SerialName("mod")
+    Mod("mod"),
 
-repositories {
-    mavenCentral()
-}
+    @SerialName("modpack")
+    Modpack("modpack"),
 
-dependencies {
-    api(libs.protobuf.kotlin.lite)
-}
+    @SerialName("resourcepack")
+    ResourcePack("resourcepack"),
 
-protobuf {
-    protoc {
-        artifact = libs.protoc.get().toString()
-    }
-
-    generateProtoTasks {
-        all().forEach {
-            it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
-            }
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "meta-libclient"
-
-            from(components["kotlin"])
-        }
-    }
+    @SerialName("shader")
+    ShaderPack("shader")
 }
