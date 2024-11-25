@@ -22,32 +22,6 @@
 
 package app.vercors.meta
 
-import app.vercors.meta.plugins.*
-import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import kotlinx.coroutines.*
 
-private val logger = KotlinLogging.logger {}
-
-fun main() {
-    logger.info { "Hello world!" }
-    val externalScope = CoroutineScope(Dispatchers.Default) + SupervisorJob()
-    val app = embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = { configure(externalScope) })
-    app.addShutdownHook {
-        externalScope.cancel()
-        logger.info { "Goodbye!" }
-    }
-    logger.info { "Starting application" }
-    app.start(wait = true)
-}
-
-fun Application.configure(externalScope: CoroutineScope) {
-    configureDI(externalScope)
-    configureSecurity()
-    configureSerialization()
-    configureMonitoring()
-    configureCache()
-    configureRouting()
-}
+fun main(args: Array<String>) = EngineMain.main(args)

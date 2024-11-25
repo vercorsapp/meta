@@ -20,11 +20,25 @@
  * SOFTWARE.
  */
 
-package app.vercors.meta.loader
+package app.vercors.meta.module
 
-import app.vercors.meta.project.MetaProjectInstaller
+import app.vercors.meta.auth.authRoutes
+import app.vercors.meta.game.gameRoutes
+import app.vercors.meta.home.homeRoutes
+import app.vercors.meta.loader.loaderRoutes
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.routing.*
 
-interface LoaderServiceBase {
-    suspend fun getLoaderVersionsForGameVersion(gameVersion: String): MetaLoaderVersionList?
-    suspend fun getInstaller(): MetaProjectInstaller?
+fun Application.configureRouting() {
+    routing {
+        authenticate("api-auth") {
+            route("/v1") {
+                gameRoutes()
+                homeRoutes()
+                loaderRoutes()
+                authRoutes()
+            }
+        }
+    }
 }

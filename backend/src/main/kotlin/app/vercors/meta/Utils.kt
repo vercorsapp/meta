@@ -22,19 +22,40 @@
 
 package app.vercors.meta
 
-import com.google.protobuf.MessageLite
+import com.google.protobuf.Any
+import com.google.protobuf.Message
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
+import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlin.time.Duration
 
-suspend fun ApplicationCall.respondProtobuf(message: MessageLite?) =
-    if (message == null) respond(HttpStatusCode.NotFound)
-    else respondBytes(message.toByteArray(), ContentType.Application.ProtoBuf)
+@Suppress("kotlin:S6312")
+suspend fun ApplicationCall.respondProtobuf(
+    message: Message? = null,
+    statusCode: HttpStatusCode? = HttpStatusCode.OK
+): Unit =
+    when {
+        message == null && statusCode == null -> respondProtobuf(statusCode = HttpStatusCode.NotFound)
+        message == null -> respondProtobuf(metaError {
+            this.code = statusCode!!.value
+            this.message = statusCode.description
+        }, statusCode)
+
+        else -> {
+            val response = when (message) {
+                is MetaError -> metaResponse { error = message }
+                else -> metaResponse { success = Any.pack(message) }
+            }
+            respondBytes(response.toByteArray(), ContentType.Application.ProtoBuf, statusCode)
+        }
+    }
 
 suspend fun <T, R> Iterable<T>.mapAsync(
     transform: suspend (T) -> R
@@ -52,5 +73,16 @@ inline fun <reified E : Enum<E>> safeValueOf(value: String): E {
 fun RoutingContext.queryParam(name: String) =
     call.request.queryParameters[name] ?: throw BadRequestException("Query parameter $name is required")
 
+fun RoutingContext.queryParams(name: String) =
+    call.request.queryParameters.getAll(name) ?: throw BadRequestException("Query parameter $name is required")
+
 fun RoutingContext.pathParam(name: String) =
     call.parameters[name] ?: throw BadRequestException("Path parameter $name is required")
+
+fun Route.cache(duration: Duration) {
+    install(CachingHeaders) {
+        options { _, _ ->
+            CachingOptions(CacheControl.MaxAge(maxAgeSeconds = duration.inWholeSeconds.toInt()))
+        }
+    }
+}

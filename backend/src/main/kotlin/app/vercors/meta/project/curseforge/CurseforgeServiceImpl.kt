@@ -22,15 +22,15 @@
 
 package app.vercors.meta.project.curseforge
 
-import app.vercors.meta.project.Project
-import app.vercors.meta.project.ProjectProvider
-import app.vercors.meta.project.ProjectType
-import app.vercors.meta.project.project
+import app.vercors.meta.project.MetaProject
+import app.vercors.meta.project.MetaProjectProvider
+import app.vercors.meta.project.MetaProjectType
+import app.vercors.meta.project.metaProject
 import org.koin.core.annotation.Single
 
 @Single
 class CurseforgeServiceImpl(private val api: CurseforgeApi) : CurseforgeService {
-    override suspend fun search(type: ProjectType, limit: Int): List<Project> =
+    override suspend fun search(type: MetaProjectType, limit: Int): List<MetaProject> =
         api.search(
             gameId = MINECRAFT_GAME_ID,
             classId = type.asClassId(),
@@ -39,13 +39,14 @@ class CurseforgeServiceImpl(private val api: CurseforgeApi) : CurseforgeService 
             pageSize = 10
         ).data.convertAll()
 
-    private fun ProjectType.asClassId(): Int = projectTypeToClassId[this] ?: throw IllegalArgumentException("Unrecognized ProjectType: $this")
+    private fun MetaProjectType.asClassId(): Int =
+        projectTypeToClassId[this] ?: throw IllegalArgumentException("Unrecognized ProjectType: $this")
 
-    private fun List<CurseforgeProject>.convertAll(): List<Project> = map { convert(it) }
+    private fun List<CurseforgeProject>.convertAll(): List<MetaProject> = map { convert(it) }
 
-    private fun convert(project: CurseforgeProject): Project = project {
-        provider = ProjectProvider.curseforge
-        type = classIdToProjectType.getOrDefault(project.classId, ProjectType.UNRECOGNIZED)
+    private fun convert(project: CurseforgeProject): MetaProject = metaProject {
+        provider = MetaProjectProvider.curseforge
+        type = classIdToProjectType.getOrDefault(project.classId, MetaProjectType.UNRECOGNIZED)
         name = project.name
         author = project.authors[0].name
         logoUrl = project.logo.thumbnailUrl
@@ -61,10 +62,10 @@ class CurseforgeServiceImpl(private val api: CurseforgeApi) : CurseforgeService 
         private const val SHADERPACK_CLASS_ID = 6552
 
         private val projectTypeToClassId = mapOf(
-            ProjectType.mod to MOD_CLASS_ID,
-            ProjectType.modpack to MODPACK_CLASS_ID,
-            ProjectType.resourcepack to RESOURCEPACK_CLASS_ID,
-            ProjectType.shader to SHADERPACK_CLASS_ID
+            MetaProjectType.mod to MOD_CLASS_ID,
+            MetaProjectType.modpack to MODPACK_CLASS_ID,
+            MetaProjectType.resourcepack to RESOURCEPACK_CLASS_ID,
+            MetaProjectType.shader to SHADERPACK_CLASS_ID
         )
         private val classIdToProjectType = projectTypeToClassId.entries.associate { (k, v) -> v to k }
     }

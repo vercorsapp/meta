@@ -32,14 +32,14 @@ class ProjectServiceImpl(
     private val curseforgeService: CurseforgeService
 ) : ProjectService {
     override suspend fun searchProject(
-        provider: ProjectProvider,
-        type: ProjectType,
+        provider: MetaProjectProvider,
+        type: MetaProjectType,
         limit: Int
-    ): List<Project> = getProviderService(provider).search(type, limit)
+    ): List<MetaProject> = getProviderService(provider).search(type, limit)
 
-    private fun getProviderService(provider: ProjectProvider): ProviderService = when (provider) {
-        ProjectProvider.modrinth -> modrinthService
-        ProjectProvider.curseforge -> curseforgeService
-        ProjectProvider.UNRECOGNIZED -> throw IllegalArgumentException("Unrecognized project provider")
+    private fun getProviderService(provider: MetaProjectProvider): ProviderService = when (provider) {
+        MetaProjectProvider.modrinth -> modrinthService
+        MetaProjectProvider.curseforge -> curseforgeService
+        MetaProjectProvider.UNRECOGNIZED -> throw IllegalArgumentException("Unrecognized project provider")
     }
 }

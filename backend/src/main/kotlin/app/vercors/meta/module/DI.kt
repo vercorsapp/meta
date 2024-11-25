@@ -20,21 +20,28 @@
  * SOFTWARE.
  */
 
-package app.vercors.meta.plugins
+package app.vercors.meta.module
 
 import app.vercors.meta.AppModule
 import io.ktor.server.application.*
-import kotlinx.coroutines.CoroutineScope
+import io.ktor.server.application.hooks.*
+import kotlinx.coroutines.*
 import org.koin.dsl.module
 import org.koin.fileProperties
 import org.koin.ksp.generated.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
-fun Application.configureDI(externalScope: CoroutineScope) {
+fun Application.configureDI() {
+    val externalScope = CoroutineScope(Dispatchers.Default) + SupervisorJob()
     install(Koin) {
         modules(module { single { externalScope } }, AppModule().module)
         slf4jLogger()
         fileProperties()
+    }
+    createApplicationPlugin("OnShutdown") {
+        on(MonitoringEvent(ApplicationStopped)) {
+            externalScope.cancel()
+        }
     }
 }

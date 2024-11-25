@@ -22,73 +22,60 @@
 
 package app.vercors.meta.home
 
+import app.vercors.meta.home.HomeServiceImpl.HomeKey
 import app.vercors.meta.mapAsync
-import app.vercors.meta.project.ProjectProvider
+import app.vercors.meta.project.MetaProjectProvider
+import app.vercors.meta.project.MetaProjectType
 import app.vercors.meta.project.ProjectService
-import app.vercors.meta.project.ProjectType
+import app.vercors.meta.utils.InMemoryCache
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
 import org.koin.core.annotation.Single
-import kotlin.time.Duration.Companion.hours
 
 private val logger = KotlinLogging.logger {}
 
 @Single
 class HomeServiceImpl(
-    private val externalScope: CoroutineScope,
+    coroutineScope: CoroutineScope,
     private val projectService: ProjectService
-) : HomeService {
-    private var loadingJob: Job? = null
-    private var cache: HomeData? = null
-
-    init {
-        externalScope.launch {
-            while (isActive) {
-                load()
-                delay(1.hours)
-            }
-        }
-    }
-
-    override suspend fun getHomeProjects(provider: ProjectProvider, types: List<ProjectType>): HomeResponse {
-        if (cache == null) {
-            if (loadingJob == null) load()
-            loadingJob!!.join()
-        }
-        val data = cache!!
+) : InMemoryCache<HomeData>(coroutineScope, homeCacheDuration), HomeService {
+    override suspend fun getHomeProjects(
+        provider: MetaProjectProvider,
+        types: List<MetaProjectType>
+    ): MetaHomeSectionList {
+        val data = getData()
             .filterKeys { (keyProvider, keyType) -> keyProvider == provider && keyType in types }
             .map { it.value }
-        return homeResponse { sections.addAll(data) }
+        return metaHomeSectionList { sections.addAll(data) }
     }
 
-    private fun load() {
-        loadingJob = externalScope.launch {
-            logger.info { "Loading home data" }
-            cache = ProjectProvider.entries
-                .filter { it != ProjectProvider.UNRECOGNIZED }
-                .flatMap { provider ->
-                    ProjectType.entries
-                        .filter { it != ProjectType.UNRECOGNIZED }
-                        .map { type -> HomeKey(provider, type) }
-                }
-                .mapAsync {
-                    it to homeSection {
-                        type = it.type
-                        projects.addAll(
-                            projectService.searchProject(
-                                provider = it.provider,
-                                type = it.type,
-                                limit = 10
-                            )
+    override suspend fun fetchData(): Map<HomeKey, MetaHomeSection> {
+        logger.info { "Loading home data" }
+        val data = MetaProjectProvider.entries
+            .filter { it != MetaProjectProvider.UNRECOGNIZED }
+            .flatMap { provider ->
+                MetaProjectType.entries
+                    .filter { it != MetaProjectType.UNRECOGNIZED }
+                    .map { type -> HomeKey(provider, type) }
+            }
+            .mapAsync {
+                it to metaHomeSection {
+                    type = it.type
+                    projects.addAll(
+                        projectService.searchProject(
+                            provider = it.provider,
+                            type = it.type,
+                            limit = 10
                         )
-                    }
+                    )
                 }
-                .toMap()
-            logger.info { "Loaded home data" }
-        }
+            }
+            .toMap()
+        logger.info { "Loaded home data" }
+        return data
     }
+
+    data class HomeKey(val provider: MetaProjectProvider, val type: MetaProjectType)
 }
 
-private typealias HomeData = Map<HomeKey, HomeSection>
-
-private data class HomeKey(val provider: ProjectProvider, val type: ProjectType)
+typealias HomeData = Map<HomeKey, MetaHomeSection>

@@ -20,11 +20,8 @@
  * SOFTWARE.
  */
 
-package app.vercors.meta.loader
+package app.vercors.meta.home
 
-import app.vercors.meta.project.MetaProjectInstaller
+import kotlin.time.Duration.Companion.hours
 
-interface LoaderServiceBase {
-    suspend fun getLoaderVersionsForGameVersion(gameVersion: String): MetaLoaderVersionList?
-    suspend fun getInstaller(): MetaProjectInstaller?
-}
+val homeCacheDuration = 1.hours

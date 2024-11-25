@@ -34,12 +34,8 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
-    api(libs.protobuf.kotlin.lite)
+    api(libs.protobuf.kotlin)
 }
 
 protobuf {
@@ -50,12 +46,8 @@ protobuf {
     generateProtoTasks {
         all().forEach {
             it.builtins {
-                named("java") {
-                    option("lite")
-                }
-                id("kotlin") {
-                    option("lite")
-                }
+                named("java")
+                id("kotlin")
             }
         }
     }

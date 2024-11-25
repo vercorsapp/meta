@@ -22,6 +22,7 @@
 
 package app.vercors.meta.game
 
+import app.vercors.meta.cache
 import app.vercors.meta.respondProtobuf
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -29,7 +30,10 @@ import org.koin.ktor.ext.inject
 fun Route.gameRoutes() {
     val gameService by inject<GameService>()
 
-    get("/game") {
-        call.respondProtobuf(gameService.getGameVersions())
+    route("/game") {
+        cache(gameCacheDuration)
+        get {
+            call.respondProtobuf(gameService.getGameVersions())
+        }
     }
 }

@@ -20,11 +20,24 @@
  * SOFTWARE.
  */
 
-package app.vercors.meta.loader
+package app.vercors.meta.module
 
-import app.vercors.meta.project.MetaProjectInstaller
+import app.vercors.meta.metaError
+import app.vercors.meta.respondProtobuf
+import app.vercors.meta.utils.MetaException
+import io.ktor.server.application.*
+import io.ktor.server.plugins.statuspages.*
 
-interface LoaderServiceBase {
-    suspend fun getLoaderVersionsForGameVersion(gameVersion: String): MetaLoaderVersionList?
-    suspend fun getInstaller(): MetaProjectInstaller?
+fun Application.configureStatusPages() {
+    install(StatusPages) {
+        exception<MetaException> { call, cause ->
+            call.respondProtobuf(
+                message = metaError {
+                    code = cause.errorCode
+                    message = cause.message
+                },
+                statusCode = cause.statusCode
+            )
+        }
+    }
 }

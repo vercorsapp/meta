@@ -22,11 +22,11 @@
 
 package app.vercors.meta.loader
 
+import app.vercors.meta.cache
 import app.vercors.meta.pathParam
 import app.vercors.meta.respondProtobuf
 import app.vercors.meta.safeValueOf
 import io.ktor.http.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
@@ -34,16 +34,17 @@ fun Route.loaderRoutes() {
     val loaderService by inject<LoaderService>()
 
     route("/loader") {
+        cache(loaderCacheDuration)
         get("/{loader}/{gameVersion}") {
-            val loaderType = safeValueOf<LoaderType>(pathParam("loader"))
+            val loaderType = safeValueOf<MetaLoaderType>(pathParam("loader"))
             val gameVersion = pathParam("gameVersion")
-            call.respondProtobuf(loaderService.getLoaderVersionsForGameVersion(loaderType, gameVersion))
+            val res = loaderService.getLoaderVersionsForGameVersion(loaderType, gameVersion)
+            if (res == null) throw LoaderDataNotFoundException(loaderType.name, gameVersion) else call.respondProtobuf(
+                res
+            )
         }
         get("/{loader}/{gameVersion}/{loaderVersion}") {
-            call.respond(HttpStatusCode.NotImplemented)
-            /*val loaderType = LoaderType.valueOf(loader)
-            val data = loaderService.getLoaderVersion(loaderType, gameVersion, loaderVersion)
-            return data?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()*/
+            call.respond(HttpStatusCode.NotImplemented, null)
         }
     }
 }

@@ -22,9 +22,9 @@
 
 package app.vercors.meta.home
 
-import app.vercors.meta.project.ProjectProvider
-import app.vercors.meta.project.ProjectType
+import app.vercors.meta.project.MetaProjectProvider
+import app.vercors.meta.project.MetaProjectType
 
 fun interface HomeService {
-    suspend fun getHomeProjects(provider: ProjectProvider, types: List<ProjectType>): HomeResponse
+    suspend fun getHomeProjects(provider: MetaProjectProvider, types: List<MetaProjectType>): MetaHomeSectionList
 }

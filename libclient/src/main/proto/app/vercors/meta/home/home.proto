@@ -27,11 +27,11 @@ package app.vercors.meta.home;
 
 option java_multiple_files = true;
 
-message HomeResponse {
-  repeated HomeSection sections = 1;
+message MetaHomeSectionList {
+  repeated MetaHomeSection sections = 1;
 }
 
-message HomeSection {
-  app.vercors.meta.project.ProjectType type = 1;
-  repeated app.vercors.meta.project.Project projects = 2;
+message MetaHomeSection {
+  app.vercors.meta.project.MetaProjectType type = 1;
+  repeated app.vercors.meta.project.MetaProject projects = 2;
 }

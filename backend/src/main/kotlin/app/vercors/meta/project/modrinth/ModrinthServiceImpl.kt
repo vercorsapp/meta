@@ -22,21 +22,21 @@
 
 package app.vercors.meta.project.modrinth
 
-import app.vercors.meta.project.Project
-import app.vercors.meta.project.ProjectType
-import app.vercors.meta.project.project
+import app.vercors.meta.project.MetaProject
+import app.vercors.meta.project.MetaProjectType
+import app.vercors.meta.project.metaProject
 import org.koin.core.annotation.Single
 
 @Single
 class ModrinthServiceImpl(private val api: ModrinthApi) : ModrinthService {
-    override suspend fun search(type: ProjectType, limit: Int) = api.search(
+    override suspend fun search(type: MetaProjectType, limit: Int) = api.search(
         facets = listOf(mapOf(type.asFacet())).asString(),
         limit = limit
     ).hits.convertAll()
 
-    private fun List<ModrinthProjectResult>.convertAll(): List<Project> = map { convert(it) }
+    private fun List<ModrinthProjectResult>.convertAll(): List<MetaProject> = map { convert(it) }
 
-    private fun convert(project: ModrinthProjectResult): Project = project {
+    private fun convert(project: ModrinthProjectResult): MetaProject = metaProject {
         name = project.title
         author = project.author
         project.iconUrl?.let { logoUrl = it }
@@ -45,13 +45,13 @@ class ModrinthServiceImpl(private val api: ModrinthApi) : ModrinthService {
     }
 
     private val projectTypeToFacet = mapOf(
-        ProjectType.mod to "mod",
-        ProjectType.modpack to "modpack",
-        ProjectType.resourcepack to "resourcepack",
-        ProjectType.shader to "shader",
+        MetaProjectType.mod to "mod",
+        MetaProjectType.modpack to "modpack",
+        MetaProjectType.resourcepack to "resourcepack",
+        MetaProjectType.shader to "shader",
     )
 
-    private fun ProjectType.asFacet(): Pair<String, String> = "project_type" to projectTypeToFacet.getValue(this)
+    private fun MetaProjectType.asFacet(): Pair<String, String> = "project_type" to projectTypeToFacet.getValue(this)
 
     private fun List<Map<String, String>>.asString(): String = joinToString(",") { map ->
         map.entries.joinToString(",") { (key, value) -> "\"$key:$value\"" }.let { "[$it]" }

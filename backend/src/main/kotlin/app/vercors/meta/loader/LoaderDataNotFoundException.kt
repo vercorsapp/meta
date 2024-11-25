@@ -20,21 +20,10 @@
  * SOFTWARE.
  */
 
-package app.vercors.meta.plugins
+package app.vercors.meta.loader
 
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import org.koin.ktor.ext.getProperty
+import app.vercors.meta.utils.MetaException
+import io.ktor.http.*
 
-fun Application.configureSecurity() {
-    val token = getProperty<String>("vercorsApiToken")
-    require(!token.isNullOrBlank()) { "vercorsApiToken property must be set" }
-
-    install(Authentication) {
-        bearer("api-auth") {
-            authenticate {
-                if (it.token == token) UserIdPrincipal("api") else null
-            }
-        }
-    }
-}
+class LoaderDataNotFoundException(loader: String, gameVersion: String) :
+    MetaException(HttpStatusCode.BadRequest, 1, "No data found for loader '$loader' and version '$gameVersion'")

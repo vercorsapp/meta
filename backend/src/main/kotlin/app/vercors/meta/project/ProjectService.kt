@@ -24,8 +24,8 @@ package app.vercors.meta.project
 
 fun interface ProjectService {
     suspend fun searchProject(
-        provider: ProjectProvider,
-        type: ProjectType,
+        provider: MetaProjectProvider,
+        type: MetaProjectType,
         limit: Int
-    ): List<Project>
+    ): List<MetaProject>
 }

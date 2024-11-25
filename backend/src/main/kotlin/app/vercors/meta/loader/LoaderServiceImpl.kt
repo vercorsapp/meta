@@ -27,44 +27,31 @@ import app.vercors.meta.loader.forge.ForgeService
 import app.vercors.meta.loader.neoforge.NeoforgeService
 import app.vercors.meta.loader.quilt.QuiltService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
-import kotlin.time.Duration.Companion.minutes
 
 private val logger = KotlinLogging.logger {}
 
 @Single
 class LoaderServiceImpl(
-    externalScope: CoroutineScope,
     private val fabricService: FabricService,
     private val forgeService: ForgeService,
     private val neoforgeService: NeoforgeService,
     private val quiltService: QuiltService
 ) : LoaderService {
-    init {
-        externalScope.launch {
-            while (isActive) {
-                logger.info { "Loading all loader data" }
-                listOf(fabricService, forgeService, neoforgeService, quiltService).forEach { it.load() }
-                delay(5.minutes)
-            }
-        }
-    }
-
-    override suspend fun getLoaderVersionsForGameVersion(loaderType: LoaderType, gameVersion: String) =
+    override suspend fun getLoaderVersionsForGameVersion(
+        loaderType: MetaLoaderType,
+        gameVersion: String
+    ): MetaLoaderVersionList? =
         getLoader(loaderType)?.getLoaderVersionsForGameVersion(gameVersion)
 
     /*suspend fun getLoaderVersion(loaderType: LoaderType, gameVersion: String, loaderVersion: String) =
         getLoader(loaderType)?.getLoaderVersion(gameVersion, loaderVersion)*/
 
-    private fun getLoader(loaderType: LoaderType): LoaderServiceBase? = when (loaderType) {
-        LoaderType.fabric -> fabricService
-        LoaderType.forge -> forgeService
-        LoaderType.neoforge -> neoforgeService
-        LoaderType.quilt -> quiltService
+    private fun getLoader(loaderType: MetaLoaderType): LoaderServiceBase? = when (loaderType) {
+        MetaLoaderType.fabric -> fabricService
+        MetaLoaderType.forge -> forgeService
+        MetaLoaderType.neoforge -> neoforgeService
+        MetaLoaderType.quilt -> quiltService
         else -> null
     }
 }

@@ -20,14 +20,21 @@
  * SOFTWARE.
  */
 
-package app.vercors.meta.plugins
+package app.vercors.meta.module
 
 import io.ktor.server.application.*
-import io.ktor.server.plugins.calllogging.*
-import org.slf4j.event.Level
+import io.ktor.server.auth.*
+import org.koin.ktor.ext.getProperty
 
-fun Application.configureMonitoring() {
-    install(CallLogging) {
-        level = Level.INFO
+fun Application.configureSecurity() {
+    val token = getProperty<String>("vercorsApiKey")
+    require(!token.isNullOrBlank()) { "vercorsApiKey property must be set" }
+
+    install(Authentication) {
+        bearer("api-auth") {
+            authenticate {
+                if (it.token == token) UserIdPrincipal("api") else null
+            }
+        }
     }
 }

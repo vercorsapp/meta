@@ -22,54 +22,46 @@
 
 package app.vercors.meta.loader.neoforge
 
-import app.vercors.meta.loader.VersionList
-import app.vercors.meta.project.ProjectInstaller
-import app.vercors.meta.loader.versionList
+import app.vercors.meta.loader.MetaLoaderVersionList
+import app.vercors.meta.loader.loaderCacheDuration
+import app.vercors.meta.loader.metaLoaderVersionList
+import app.vercors.meta.project.MetaProjectInstaller
+import app.vercors.meta.utils.InMemoryCache
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 
 private val logger = KotlinLogging.logger {}
 
 @Single
 class NeoforgeServiceImpl(
-    private val externalScope: CoroutineScope,
-    private val neoforgeApi: NeoforgeApi
-) : NeoforgeService {
-    private var loadingJob: Job? = null
-    private var data: VersionMap? = null
-
-    override suspend fun getLoaderVersionsForGameVersion(gameVersion: String): VersionList? {
-        if (data == null) {
-            if (loadingJob == null) load()
-            loadingJob!!.join()
-        }
-        return data!![gameVersion]
+    private val neoforgeApi: NeoforgeApi,
+    coroutineScope: CoroutineScope
+) : InMemoryCache<VersionMap>(coroutineScope, loaderCacheDuration), NeoforgeService {
+    override suspend fun getLoaderVersionsForGameVersion(gameVersion: String): MetaLoaderVersionList? {
+        return getData()[gameVersion]
     }
 
-    override suspend fun getInstaller(): ProjectInstaller? {
+    override suspend fun getInstaller(): MetaProjectInstaller? {
         TODO("Not yet implemented")
     }
 
-    override fun load() {
-        loadingJob = externalScope.launch {
-            logger.info { "Loading NeoForge Loader data..." }
-            data = neoforgeApi.getAllVersions().versions
-                .groupBy { it.split('.').dropLast(1).joinToString(".") }
-                .mapKeys { (key, _) -> "1.$key" }
-                .mapValues { (mcVersion, neoforgeVersions) ->
-                    versionList {
-                        latest = "$mcVersion-${neoforgeVersions.last()}"
-                        neoforgeVersions.lastOrNull { !it.endsWith("-beta") }
-                            ?.let { recommended = "$mcVersion-$it" }
-                        versions.addAll(neoforgeVersions.reversed().map { "$mcVersion-$it" })
-                    }
+    override suspend fun fetchData(): VersionMap {
+        logger.info { "Loading NeoForge Loader data..." }
+        val data = neoforgeApi.getAllVersions().versions
+            .groupBy { it.split('.').dropLast(1).joinToString(".") }
+            .mapKeys { (key, _) -> "1.$key" }
+            .mapValues { (mcVersion, neoforgeVersions) ->
+                metaLoaderVersionList {
+                    latest = "$mcVersion-${neoforgeVersions.last()}"
+                    neoforgeVersions.lastOrNull { !it.endsWith("-beta") }
+                        ?.let { recommended = "$mcVersion-$it" }
+                    versions.addAll(neoforgeVersions.reversed().map { "$mcVersion-$it" })
                 }
-            logger.info { "Loaded NeoForge Loader data" }
-        }
+            }
+        logger.info { "Loaded NeoForge Loader data" }
+        return data
     }
 }
 
-private typealias VersionMap = Map<String, VersionList>
+private typealias VersionMap = Map<String, MetaLoaderVersionList>

@@ -26,21 +26,21 @@ package app.vercors.meta.game;
 
 option java_multiple_files = true;
 
-message GameVersionList {
+message MetaGameVersionList {
   string recommended = 1;
   string latest = 2;
-  repeated GameVersion versions = 3;
+  repeated MetaGameVersion versions = 3;
 }
 
-message GameVersion {
+message MetaGameVersion {
   string id = 1;
-  GameVersionType type = 2;
+  MetaGameVersionType type = 2;
   uint64 time = 3;
   string url = 4;
   string sha1 = 5;
 }
 
-enum GameVersionType {
+enum MetaGameVersionType {
   release = 0;
   snapshot = 1;
   beta = 2;

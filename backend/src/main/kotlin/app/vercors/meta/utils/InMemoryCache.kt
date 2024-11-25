@@ -20,14 +20,30 @@
  * SOFTWARE.
  */
 
-package app.vercors.meta.plugins
+package app.vercors.meta.utils
 
-import com.ucasoft.ktor.simpleCache.SimpleCache
-import com.ucasoft.ktor.simpleMemoryCache.memoryCache
-import io.ktor.server.application.*
+import kotlinx.coroutines.*
+import kotlin.time.Duration
 
-fun Application.configureCache() {
-    install(SimpleCache) {
-        memoryCache {}
+abstract class InMemoryCache<T : Any>(
+    coroutineScope: CoroutineScope,
+    private val cacheDuration: Duration
+) {
+    private lateinit var value: Deferred<T>
+
+    init {
+        coroutineScope.launch {
+            value = async { fetchData() }
+            while (isActive) {
+                delay(cacheDuration)
+                val newValue = async { fetchData() }
+                newValue.join()
+                value = newValue
+            }
+        }
     }
+
+    suspend fun getData(): T = value.await()
+
+    protected abstract suspend fun fetchData(): T
 }

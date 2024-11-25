@@ -26,14 +26,14 @@ package app.vercors.meta.loader;
 
 option java_multiple_files = true;
 
-enum LoaderType {
+enum MetaLoaderType {
   fabric = 0;
   forge = 1;
   neoforge = 2;
   quilt = 3;
 }
 
-message VersionList {
+message MetaLoaderVersionList {
   optional string recommended = 1;
   optional string latest = 2;
   repeated string versions = 3;

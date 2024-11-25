@@ -31,8 +31,11 @@ import org.koin.core.annotation.Single
 class FabricServiceImpl(
     fabricApi: FabricApi,
     externalScope: CoroutineScope
-) : FabricLikeService("Fabric", FabricLikeApi { fabricApi.getAllVersions() }, externalScope), FabricService {
-    override val installerArgs: List<String> = listOf(
+) : FabricLikeService(
+    name = "Fabric",
+    api = FabricLikeApi { fabricApi.getAllVersions() },
+    coroutineScope = externalScope,
+    installerArgs = listOf(
         "client",
         "-dir",
         "\${installDir}",
@@ -41,4 +44,4 @@ class FabricServiceImpl(
         "-loader",
         "\${loaderVersion}"
     )
-}
+), FabricService

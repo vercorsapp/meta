@@ -30,12 +30,7 @@ plugins {
 }
 
 application {
-    mainClass.set("app.vercors.api.ApplicationKt")
-}
-
-repositories {
-    mavenCentral()
-    mavenLocal()
+    mainClass.set("app.vercors.meta.ApplicationKt")
 }
 
 dependencies {
@@ -46,8 +41,7 @@ dependencies {
     implementation(libs.ktor.server.call.logging)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.status.pages)
-    implementation(libs.ktor.simple.cache)
-    implementation(libs.ktor.simple.memory.cache)
+    implementation(libs.ktor.server.caching.headers)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.content.negotiation)
@@ -58,13 +52,14 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.ktor3)
     implementation(libs.koin.logger.slf4j)
-    compileOnly(libs.koin.annotations)
-    ksp(libs.koin.ksp.compiler)
-    testImplementation(libs.koin.test)
     implementation(libs.logback.classic)
     implementation(libs.kotlin.logging)
-    testImplementation(libs.ktor.server.test.host)
+    compileOnly(libs.koin.annotations)
+    ksp(libs.koin.ksp.compiler)
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.koin.test)
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.ktor.serialization.kotlinx.protobuf)
 }
 
 tasks {
@@ -77,7 +72,7 @@ tasks {
         appProperty("curseforgeApiKey", "CURSEFORGE_API_KEY")
         appProperty("modrinthApiKey", "MODRINTH_API_KEY")
         appProperty("microsoftClientId", "MICROSOFT_CLIENT_ID")
-        appProperty("vercorsApiToken", "VERCORS_API_TOKEN")
+        appProperty("vercorsApiKey", "VERCORS_API_KEY")
     }
 
     processResources {

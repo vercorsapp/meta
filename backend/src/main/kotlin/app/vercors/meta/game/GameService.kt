@@ -23,5 +23,5 @@
 package app.vercors.meta.game
 
 fun interface GameService {
-    suspend fun getGameVersions(): GameVersionList
+    suspend fun getGameVersions(): MetaGameVersionList
 }

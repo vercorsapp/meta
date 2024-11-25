@@ -20,13 +20,8 @@
  * SOFTWARE.
  */
 
-package app.vercors.meta.plugins
+package app.vercors.meta.loader
 
-import io.ktor.server.application.*
-import io.ktor.server.plugins.statuspages.*
+import kotlin.time.Duration.Companion.minutes
 
-fun Application.configureStatusPages() {
-    install(StatusPages) {
-
-    }
-}
+val loaderCacheDuration = 5.minutes

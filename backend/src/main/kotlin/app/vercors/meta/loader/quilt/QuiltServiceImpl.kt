@@ -31,8 +31,11 @@ import org.koin.core.annotation.Single
 class QuiltServiceImpl(
     quiltApi: QuiltApi,
     externalScope: CoroutineScope
-) : FabricLikeService("Quilt", FabricLikeApi { quiltApi.getAllVersions() }, externalScope), QuiltService {
-    override val installerArgs: List<String> = listOf(
+) : FabricLikeService(
+    name = "Quilt",
+    api = FabricLikeApi { quiltApi.getAllVersions() },
+    coroutineScope = externalScope,
+    installerArgs = listOf(
         "install",
         "client",
         "\${gameVersion}",
@@ -40,4 +43,4 @@ class QuiltServiceImpl(
         "--install-dir=\${installDir}",
         "--no-profile"
     )
-}
+), QuiltService

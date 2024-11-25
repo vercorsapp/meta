@@ -22,21 +22,21 @@
 
 package app.vercors.meta.home
 
-import app.vercors.meta.pathParam
-import app.vercors.meta.project.ProjectProvider
-import app.vercors.meta.project.ProjectType
-import app.vercors.meta.queryParam
-import app.vercors.meta.respondProtobuf
-import app.vercors.meta.safeValueOf
+import app.vercors.meta.*
+import app.vercors.meta.project.MetaProjectProvider
+import app.vercors.meta.project.MetaProjectType
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.homeRoutes() {
     val homeService by inject<HomeService>()
 
-    get("/home/{provider}") {
-        val provider = safeValueOf<ProjectProvider>(pathParam("provider"))
-        val types = queryParam("types").split(',').map { safeValueOf<ProjectType>(it) }
-        call.respondProtobuf(homeService.getHomeProjects(provider, types))
+    route("/home/{provider}") {
+        cache(homeCacheDuration)
+        get {
+            val provider = safeValueOf<MetaProjectProvider>(pathParam("provider"))
+            val types = queryParams("types").map { safeValueOf<MetaProjectType>(it) }
+            call.respondProtobuf(homeService.getHomeProjects(provider, types))
+        }
     }
 }

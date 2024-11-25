@@ -30,3 +30,9 @@ allprojects {
     group = "app.vercors"
     version = "0.1.0-SNAPSHOT"
 }
+
+subprojects {
+    repositories {
+        mavenCentral()
+    }
+}

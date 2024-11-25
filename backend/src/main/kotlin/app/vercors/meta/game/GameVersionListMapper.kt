@@ -20,11 +20,33 @@
  * SOFTWARE.
  */
 
-package app.vercors.meta.loader
+package app.vercors.meta.game
 
-import app.vercors.meta.project.MetaProjectInstaller
+import app.vercors.meta.game.mojang.MojangReleaseType
+import app.vercors.meta.game.mojang.MojangVersion
+import app.vercors.meta.game.mojang.MojangVersionManifest
 
-interface LoaderServiceBase {
-    suspend fun getLoaderVersionsForGameVersion(gameVersion: String): MetaLoaderVersionList?
-    suspend fun getInstaller(): MetaProjectInstaller?
+fun MojangVersionManifest.toResult(): MetaGameVersionList = let {
+    metaGameVersionList {
+        recommended = it.latest.release
+        latest = it.latest.snapshot
+        versions += it.versions.map { it.toResult() }
+    }
+}
+
+private fun MojangVersion.toResult(): MetaGameVersion = let {
+    metaGameVersion {
+        id = it.id
+        type = it.type.toResult()
+        time = it.time.toEpochMilli()
+        url = it.url
+        sha1 = it.sha1
+    }
+}
+
+private fun MojangReleaseType.toResult(): MetaGameVersionType = when (this) {
+    MojangReleaseType.Release -> MetaGameVersionType.release
+    MojangReleaseType.Snapshot -> MetaGameVersionType.snapshot
+    MojangReleaseType.Beta -> MetaGameVersionType.beta
+    MojangReleaseType.Alpha -> MetaGameVersionType.alpha
 }

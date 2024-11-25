@@ -22,58 +22,55 @@
 
 package app.vercors.meta.loader.fabriclike
 
-import app.vercors.meta.loader.VersionList
 import app.vercors.meta.loader.LoaderServiceBase
-import app.vercors.meta.project.ProjectInstaller
-import app.vercors.meta.project.projectInstaller
-import app.vercors.meta.loader.versionList
+import app.vercors.meta.loader.MetaLoaderVersionList
+import app.vercors.meta.loader.loaderCacheDuration
+import app.vercors.meta.loader.metaLoaderVersionList
+import app.vercors.meta.project.MetaProjectInstaller
+import app.vercors.meta.project.metaProjectInstaller
+import app.vercors.meta.utils.InMemoryCache
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 private val logger = KotlinLogging.logger {}
 
 abstract class FabricLikeService(
     private val name: String,
     private val api: FabricLikeApi,
-    private val externalScope: CoroutineScope
-) : LoaderServiceBase {
-    private var loadingJob: Job? = null
-    private var minecraftVersions: List<String> = emptyList()
-    private var loaderVersions: VersionList? = null
-    private var installerVersion: ProjectInstaller? = null
-    abstract val installerArgs: List<String>
-
-    override suspend fun getLoaderVersionsForGameVersion(gameVersion: String): VersionList? {
-        if (loaderVersions == null) {
-            if (loadingJob == null) load()
-            loadingJob!!.join()
-        }
-        return if (gameVersion in minecraftVersions) loaderVersions else null
+    private val coroutineScope: CoroutineScope,
+    private val installerArgs: List<String>
+) : InMemoryCache<FabricLikeData>(coroutineScope, loaderCacheDuration), LoaderServiceBase {
+    override suspend fun getLoaderVersionsForGameVersion(gameVersion: String): MetaLoaderVersionList? {
+        val data = getData()
+        return if (gameVersion in data.minecraftVersions) data.loaderVersions else null
     }
 
-    override suspend fun getInstaller(): ProjectInstaller? = installerVersion
+    override suspend fun getInstaller(): MetaProjectInstaller? = getData().installerVersion
 
-    override fun load() {
-        loadingJob = externalScope.launch {
-            logger.info { "Loading $name Loader data..." }
-            val (game, loader, installer) = api.getAllVersions()
-            minecraftVersions = game.map { it.version }
-            val latestInstaller = installer.first()
-            installerVersion = projectInstaller {
-                url = latestInstaller.url
-                maven = latestInstaller.maven
-                version = latestInstaller.version
-                minimumJavaVersion = 8
-                arguments.addAll(installerArgs)
-            }
-            loaderVersions = versionList {
-                loader.firstOrNull { it.stable ?: !it.version.contains('-') }?.let { this.recommended = it.version }
-                loader.firstOrNull()?.let { this.latest = it.version }
-                this.versions += loader.map { it.version }
-            }
-            logger.info { "Loaded $name Loader data" }
+    override suspend fun fetchData(): FabricLikeData {
+        logger.info { "Loading $name Loader data..." }
+        val (game, loader, installer) = api.getAllVersions()
+        val minecraftVersions = game.map { it.version }
+        val latestInstaller = installer.first()
+        val installerVersion = metaProjectInstaller {
+            url = latestInstaller.url
+            maven = latestInstaller.maven
+            version = latestInstaller.version
+            minimumJavaVersion = 8
+            arguments.addAll(installerArgs)
         }
+        val loaderVersions = metaLoaderVersionList {
+            loader.firstOrNull { it.stable ?: !it.version.contains('-') }?.let { this.recommended = it.version }
+            loader.firstOrNull()?.let { this.latest = it.version }
+            this.versions += loader.map { it.version }
+        }
+        logger.info { "Loaded $name Loader data" }
+        return FabricLikeData(minecraftVersions, loaderVersions, installerVersion)
     }
 }
+
+data class FabricLikeData(
+    val minecraftVersions: List<String>,
+    val loaderVersions: MetaLoaderVersionList,
+    val installerVersion: MetaProjectInstaller,
+)

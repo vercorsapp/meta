@@ -23,5 +23,5 @@
 package app.vercors.meta.loader
 
 fun interface LoaderService {
-    suspend fun getLoaderVersionsForGameVersion(loaderType: LoaderType, gameVersion: String): VersionList?
+    suspend fun getLoaderVersionsForGameVersion(loaderType: MetaLoaderType, gameVersion: String): MetaLoaderVersionList?
 }

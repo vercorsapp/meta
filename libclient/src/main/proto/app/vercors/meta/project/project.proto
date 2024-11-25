@@ -26,21 +26,21 @@ package app.vercors.meta.project;
 
 option java_multiple_files = true;
 
-enum ProjectProvider {
+enum MetaProjectProvider {
   modrinth = 0;
   curseforge = 1;
 }
 
-enum ProjectType {
+enum MetaProjectType {
   mod = 0;
   modpack = 1;
   resourcepack = 2;
   shader = 3;
 }
 
-message Project {
-  ProjectProvider provider = 1;
-  ProjectType type = 2;
+message MetaProject {
+  MetaProjectProvider provider = 1;
+  MetaProjectType type = 2;
   string name = 3;
   string author = 4;
   optional string logoUrl = 5;
@@ -48,7 +48,7 @@ message Project {
   string description = 7;
 }
 
-message ProjectInstaller {
+message MetaProjectInstaller {
   string url = 1;
   string maven = 2;
   string version = 3;
