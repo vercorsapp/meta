@@ -2,7 +2,7 @@
 kotlin = "2.1.0"
 ktor = "3.0.1"
 ktorfit = "2.2.0"
-logback = "1.5.12"
+logback = "1.5.14"
 ksp = "2.1.0-1.0.29"
 kotlin-logging = "7.0.3"
 protobuf-lib = "4.29.0"
